@@ -7,10 +7,11 @@ import java.io.IOException
 import com.example.siplagmovil.data.network.ApiService // Import the ApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.example.siplagmovil.data.model.local.SharedPreferencesManager
 
 class AuthRepository(
     private val authApi: ApiService,
-    private val sharedPreferences: SharedPreferences
+    private val sharedPreferencesManager: SharedPreferencesManager
 ) {
 
     suspend fun login(email: String, password: String): Result<LoginResponse> {
@@ -22,8 +23,11 @@ class AuthRepository(
                 if (response.isSuccessful) {
                     val responseBody = response.body()!!
 
-                    // Store the JWT token in SharedPreferences
-                    saveToken(responseBody.token)
+                    // Store the JWT token using SharedPreferencesManager
+                    responseBody.token?.let {
+                        sharedPreferencesManager.saveToken(it)  // Only save if the token is non-null
+                    } ?: throw Exception("Token is null")  // Optionally handle the null case
+
 
                     Result.success(responseBody)
                 } else {
@@ -36,13 +40,9 @@ class AuthRepository(
             }
         }
     }
-
-    // Save the token to SharedPreferences
-    private fun saveToken(token: String?) {
-        token?.let {
-            sharedPreferences.edit()
-                .putString("JWT_TOKEN", it)
-                .apply()
-        }
+    // Retrieve the token using SharedPreferencesManager
+    fun getToken(): String? {
+        return sharedPreferencesManager.getToken()  //FUNCION DE PRUEBA
     }
 }
+

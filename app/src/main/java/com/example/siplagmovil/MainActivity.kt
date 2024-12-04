@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.siplagmovil.data.model.AuthRepository
+import com.example.siplagmovil.data.model.local.SharedPreferencesManager
 import com.example.siplagmovil.data.network.RetrofitInstance
 import com.example.siplagmovil.domain.LoginUseCase
 import com.example.siplagmovil.ui.LoginScreen
@@ -26,10 +27,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
 
-        val sharedPreferences = getSharedPreferences("SIPLAG_PREFS", MODE_PRIVATE) // Llama las shared_preferences
+        val sharedPreferencesManager = SharedPreferencesManager(applicationContext)
 
-        // Create an instance of AuthRepository
-        val authRepository = AuthRepository(RetrofitInstance.api, sharedPreferences)
+        val authRepository = AuthRepository(RetrofitInstance.api, sharedPreferencesManager)
+
 
         // Create an instance of LoginUseCase using the AuthRepository
         val loginUseCase = LoginUseCase(authRepository)
@@ -51,26 +52,25 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
 //@Composable
 //fun Greeting(name: String, modifier: Modifier = Modifier) {
-    //Text(
-        //text = "Hello $name!",
-        //modifier = modifier
-    //)
+//Text(
+//text = "Hello $name!",
+//modifier = modifier
+//)
 //}
 
 //@Preview(showBackground = true)
 //@Composable
 //fun GreetingPreview() {
-    //SIPLAGMovilTheme {
-        //Greeting("Android")
-    //}
+//SIPLAGMovilTheme {
+//Greeting("Android")
+//}
 //}
 
 //Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-    //Greeting(
-        //name = "Android",
-        //modifier = Modifier.padding(innerPadding)
-    //)
+//Greeting(
+//name = "Android",
+//modifier = Modifier.padding(innerPadding)
+//)
 //}

@@ -1,5 +1,6 @@
 package com.example.siplagmovil.ui
 
+import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -53,11 +54,22 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
             _isLoading.value = false
 
             if (result.isSuccess) {
-                _loginResult.value = true
+                // Login was successful, check if the token was saved
+                val token = loginUseCase.authRepository.getToken() // Para mostrar Token, BORRAR DESPUES
+
+                if (!token.isNullOrEmpty()) {
+                    _loginResult.value = true
+                    //Log.d("TokenCheck", "Token after login: $token") // Logs para testeo de guardado del token
+                } else {
+                    _errorMessage.value = "Login successful, but token not saved."
+                    //Log.e("TokenCheck", "Token is null or empty after login.")
+                }
             } else {
                 _loginResult.value = false
                 _errorMessage.value = result.exceptionOrNull()?.localizedMessage ?: "Login failed"
             }
         }
     }
+
 }
+

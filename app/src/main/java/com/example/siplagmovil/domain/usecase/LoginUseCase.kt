@@ -5,21 +5,27 @@ import com.example.siplagmovil.data.response.LoginResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class LoginUseCase(private val authRepository: AuthRepository) {
+class LoginUseCase(public val authRepository : AuthRepository) { //Cambiar authRepository public a private despues de testear
 
     suspend fun execute(email: String, password: String): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 val loginResponse = authRepository.login(email, password)
 
-                // Check if the login was successful
                 if (loginResponse.isSuccess) {
-                    Result.success(Unit)  // Return success with no additional data
+                    // Check if the token is saved after successful login
+                    val token = authRepository.getToken()  // Retrieve the saved token
+
+                    if (!token.isNullOrEmpty()) {
+                        Result.success(Unit)  // Login successful, and token saved
+                    } else {
+                        Result.failure(Exception("Token not saved after login"))
+                    }
                 } else {
-                    Result.failure(Exception("Login failed"))
+                    Result.failure(Exception("Login failed: ${loginResponse.exceptionOrNull()?.localizedMessage}"))
                 }
             } catch (e: Exception) {
-                // Handle exceptions such as network issues or JSON parsing errors
+                // Handle any exceptions (network issues, parsing errors, etc.)
                 Result.failure(e)
             }
         }
