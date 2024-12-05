@@ -55,16 +55,16 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
 
             if (result.isSuccess) {
                 // Login was successful, check if the token was saved
-                val token = loginUseCase.authRepository.getToken() // Para mostrar Token, BORRAR DESPUES
-
-                if (!token.isNullOrEmpty()) {
-                    _loginResult.value = true
+                //val token = loginUseCase.authRepository.getToken() // Para mostrar Token, BORRAR DESPUES
+                _loginResult.value = true
+                //if (!token.isNullOrEmpty()) {
+                    //_loginResult.value = true
                     //Log.d("TokenCheck", "Token after login: $token") // Logs para testeo de guardado del token
-                } else {
-                    _errorMessage.value = "Login successful, but token not saved."
+                //} else {
+                    //_errorMessage.value = "Login successful, but token not saved."
                     //Log.e("TokenCheck", "Token is null or empty after login.")
                 }
-            } else {
+             else {
                 _loginResult.value = false
                 _errorMessage.value = result.exceptionOrNull()?.localizedMessage ?: "Login failed"
             }
