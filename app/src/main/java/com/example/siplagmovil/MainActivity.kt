@@ -1,24 +1,20 @@
 package com.example.siplagmovil
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.siplagmovil.data.model.AuthRepository
 import com.example.siplagmovil.data.model.local.SharedPreferencesManager
 import com.example.siplagmovil.data.network.RetrofitInstance
 import com.example.siplagmovil.domain.LoginUseCase
-import com.example.siplagmovil.ui.LoginScreen
-import com.example.siplagmovil.ui.LoginViewModel
+import com.example.siplagmovil.ui.login.LoginScreen
+import com.example.siplagmovil.ui.login.LoginViewModel
 import com.example.siplagmovil.ui.theme.SIPLAGMovilTheme
 
 class MainActivity : ComponentActivity() {
@@ -44,10 +40,18 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginScreen(loginViewModel)
+                    LoginScreen(
+                        viewModel = loginViewModel,
+                        onLoginSuccess = { navigateToImagesActivity() })
                 }
             }
         }
+
+    }
+    private fun navigateToImagesActivity() {
+        val intent = Intent(this, ImagesActivity::class.java)
+        startActivity(intent)
+        finish() // Prevent going back to the login screen
     }
 }
 

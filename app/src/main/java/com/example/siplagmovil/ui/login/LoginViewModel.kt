@@ -1,16 +1,12 @@
-package com.example.siplagmovil.ui
+package com.example.siplagmovil.ui.login
 
-import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.siplagmovil.domain.LoginUseCase
-import com.example.siplagmovil.data.response.LoginResponse
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
 
@@ -57,6 +53,7 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
                 // Login was successful, check if the token was saved
                 //val token = loginUseCase.authRepository.getToken() // Para mostrar Token, BORRAR DESPUES
                 _loginResult.value = true
+
                 //if (!token.isNullOrEmpty()) {
                     //_loginResult.value = true
                     //Log.d("TokenCheck", "Token after login: $token") // Logs para testeo de guardado del token

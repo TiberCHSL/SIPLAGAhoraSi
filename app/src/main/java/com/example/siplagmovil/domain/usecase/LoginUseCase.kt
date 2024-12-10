@@ -5,7 +5,7 @@ import com.example.siplagmovil.data.response.LoginResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class LoginUseCase(public val authRepository : AuthRepository) { //Cambiar authRepository public a private despues de testear
+class LoginUseCase(private val authRepository : AuthRepository) { //Cambiar authRepository public a private despues de testear
 
     suspend fun execute(email: String, password: String): Result<Unit> {
         return withContext(Dispatchers.IO) {
