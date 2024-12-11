@@ -12,7 +12,7 @@ class ImageGalleryViewModel : ViewModel() {
     private val _imageList = MutableLiveData<List<Image>>()
     val imageList: LiveData<List<Image>> get() = _imageList
 
-    private val images: MutableList<Uri> = mutableListOf()
+    private val images: MutableList<Image> = mutableListOf()
 
     init {
         loadImages()
@@ -23,15 +23,24 @@ class ImageGalleryViewModel : ViewModel() {
         // For now, just initialize with some mock data if needed
         val imageUris = listOf<Uri>(/* Some URIs here */)
         val imageObjects = imageUris.map { Image(it, "Image ${it.hashCode()}") } // Create Image objects
-        _imageList.value = imageObjects
+        images.addAll(imageObjects)
+        _imageList.value = images.toList()   // Se borra la lista anterior y se reemplaza por una nueva al cargar las imagenes
     }
 
-    fun addImage(imageUri: Uri) {
+
+    //fun addImage(imageUri: Uri) {
         // Add the new image URI to the list and update the LiveData
-        images.add(imageUri)
+        //images.add(imageUri)
 
         // Convert list of Uri to list of Image objects
-        val imageObjects = images.map { Image(it, "Image ${it.hashCode()}") }
-        _imageList.value = imageObjects
+        //val imageObjects = images.map { Image(it, "Image ${it.hashCode()}") }
+        //_imageList.value = imageObjects
+    //}
+    // Add multiple images
+    fun addImages(imageUris: List<Uri>) {
+        val newImages = imageUris.map { uri -> Image(uri, "Image ${uri.hashCode()}") }
+        images.addAll(newImages)
+        _imageList.value = images.toList()
     }
 }
+

@@ -24,13 +24,15 @@ class ImagesActivity : AppCompatActivity() {
     private lateinit var adapter: ImageGalleryAdapter
     private val viewModel: ImageGalleryViewModel by viewModels() // ViewModel initialization simplified
 
-    // Register the image picker result contract
-    private val pickImageContract = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            // Add the selected image URI to the ViewModel
-            viewModel.addImage(it)
+    private val pickMultipleImagesContract = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris: List<Uri> ->
+        // Handle the list of selected URIs
+        uris?.let {
+            // Add each selected image URI to the ViewModel or process as needed
+            //it.forEach { uri ->
+            viewModel.addImages(it) // Assuming you have an addImage method in your ViewModel
+            }
         }
-    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +59,7 @@ class ImagesActivity : AppCompatActivity() {
         val btnAddImage: FloatingActionButton = findViewById(R.id.fabAddImage)
         btnAddImage.setOnClickListener {
             // Launch the gallery picker when the "Add" button is clicked
-            pickImageContract.launch("image/*")
+            pickMultipleImagesContract.launch("image/*")
         }
 
         // Apply window insets for edge-to-edge support
