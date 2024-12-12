@@ -13,7 +13,10 @@ import com.example.siplagmovil.R
 import com.example.siplagmovil.data.model.Image
 import androidx.recyclerview.widget.DiffUtil
 
-class ImageGalleryAdapter(private val context: Context) : ListAdapter<Image, ImageGalleryAdapter.ImageViewHolder>(ImageDiffCallback()) {
+class ImageGalleryAdapter(
+    private val context: Context,
+    private val onDeleteClick: (Image) -> Unit
+) : ListAdapter<Image, ImageGalleryAdapter.ImageViewHolder>(ImageDiffCallback()) {
 
     // Override onCreateViewHolder to inflate the item layout
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
@@ -28,7 +31,12 @@ class ImageGalleryAdapter(private val context: Context) : ListAdapter<Image, Ima
             .load(image.uri)  // Assuming Image has a `uri` property
             .into(holder.imageView)
 
-        holder.tvImageName.text = image.name ?: "Image $position"  // Displaying the image name if available
+        holder.tvImageName.text =
+            image.name ?: "Image $position"  // Displaying the image name if available
+        // Set up delete button click listener
+        holder.btnDelete.setOnClickListener {
+            onDeleteClick(image)
+        }
     }
 
     // Return the size of the list
@@ -38,6 +46,7 @@ class ImageGalleryAdapter(private val context: Context) : ListAdapter<Image, Ima
     class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.imageView)
         val tvImageName: TextView = itemView.findViewById(R.id.tvImageName)
+        val btnDelete: ImageView = itemView.findViewById(R.id.btnDelete)
     }
 
     // DiffUtil callback to compare items and ensure efficient list updates

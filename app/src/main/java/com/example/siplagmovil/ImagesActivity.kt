@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -24,12 +25,13 @@ class ImagesActivity : AppCompatActivity() {
     private lateinit var adapter: ImageGalleryAdapter
     private val viewModel: ImageGalleryViewModel by viewModels() // ViewModel initialization simplified
 
-    private val pickMultipleImagesContract = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris: List<Uri> ->
-        // Handle the list of selected URIs
-        uris?.let {
-            // Add each selected image URI to the ViewModel or process as needed
-            //it.forEach { uri ->
-            viewModel.addImages(it) // Assuming you have an addImage method in your ViewModel
+    private val pickMultipleImagesContract =
+        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris: List<Uri> ->
+            // Handle the list of selected URIs
+            uris?.let {
+                // Add each selected image URI to the ViewModel or process as needed
+                //it.forEach { uri ->
+                viewModel.addImages(it) // Assuming you have an addImage method in your ViewModel
             }
         }
 
@@ -42,7 +44,9 @@ class ImagesActivity : AppCompatActivity() {
         // Initialize the RecyclerView and its adapter
         recyclerView = findViewById(R.id.rvImageGallery)
         recyclerView.layoutManager = GridLayoutManager(this, 3)
-        adapter = ImageGalleryAdapter(this)
+        adapter = ImageGalleryAdapter(this) { image ->
+            viewModel.deleteImage(image)
+        }
         recyclerView.adapter = adapter
 
         // Observe the image list from the ViewModel
@@ -61,6 +65,11 @@ class ImagesActivity : AppCompatActivity() {
             // Launch the gallery picker when the "Add" button is clicked
             pickMultipleImagesContract.launch("image/*")
         }
+        val clearButton: Button = findViewById(R.id.btnClear)
+        clearButton.setOnClickListener {
+            viewModel.clearAllImages()
+        }
+
 
         // Apply window insets for edge-to-edge support
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.rvImageGallery)) { v, insets ->
