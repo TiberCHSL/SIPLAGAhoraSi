@@ -68,6 +68,11 @@ class ImageGalleryViewModel(application: Application) : AndroidViewModel(applica
                     if (response.isSuccessful) {
                         Log.d("ImageUpload", "Image uploaded successfully: ${response.body()?.message}")
                         _uploadStatus.value = true
+
+                        // Remove the URI after successful upload
+                        repository.deleteImage(uri)
+                        images.removeIf { it.uri == uri }
+                        _imageList.value = images.toList()
                     } else {
                         Log.e("ImageUpload", "Failed to upload image: ${response.errorBody()?.string()}")
                         _uploadStatus.value = false
