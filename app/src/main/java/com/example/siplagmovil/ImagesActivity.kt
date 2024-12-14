@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -15,6 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.siplagmovil.data.model.local.SharedPreferencesManager
 import com.example.siplagmovil.ui.images.ImageGalleryAdapter
 import com.example.siplagmovil.ui.images.ImageGalleryViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -23,25 +25,29 @@ class ImagesActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ImageGalleryAdapter
-    private val viewModel: ImageGalleryViewModel by viewModels() // ViewModel initialization simplified
+    private val viewModel: ImageGalleryViewModel by viewModels()
 
     private val pickMultipleImagesContract =
-        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris: List<Uri> ->
-            // Handle the list of selected URIs
+        registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris: List<Uri>? ->
             uris?.let {
-                // Add each selected image URI to the ViewModel or process as needed
-                //it.forEach { uri ->
-                viewModel.addImages(it) // Assuming you have an addImage method in your ViewModel
+                val sharedPreferencesManager = SharedPreferencesManager(applicationContext)
+                val token = sharedPreferencesManager.getToken()
+
+                if (token != null) {
+                    // Trigger uploads and add images to the gallery
+                    viewModel.addImages(it, token)
+                } else {
+                    Toast.makeText(this, "Authentication token not found.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_images3)
 
-        // Initialize the RecyclerView and its adapter
+        // Initialize RecyclerView and adapter
         recyclerView = findViewById(R.id.rvImageGallery)
         recyclerView.layoutManager = GridLayoutManager(this, 3)
         adapter = ImageGalleryAdapter(this) { image ->
@@ -49,29 +55,38 @@ class ImagesActivity : AppCompatActivity() {
         }
         recyclerView.adapter = adapter
 
-        // Observe the image list from the ViewModel
+        // Observe image list
         viewModel.imageList.observe(this, Observer { imageList ->
             imageList?.let {
                 adapter.submitList(it)
             }
         })
 
-        // Load the initial list of images
+        // Observe upload status and provide feedback
+        viewModel.uploadStatus.observe(this, Observer { isSuccess ->
+            if (isSuccess == true) {
+                Toast.makeText(this, "Image uploaded successfully!", Toast.LENGTH_SHORT).show()
+            } else if (isSuccess == false) {
+                Toast.makeText(this, "Image upload failed.", Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        // Load initial list of images
         viewModel.loadImages()
 
-        // Set up the "Add" button to launch the image picker
+        // "Add" button to launch image picker
         val btnAddImage: FloatingActionButton = findViewById(R.id.fabAddImage)
         btnAddImage.setOnClickListener {
-            // Launch the gallery picker when the "Add" button is clicked
             pickMultipleImagesContract.launch("image/*")
         }
+
+        // "Clear" button to remove all images
         val clearButton: Button = findViewById(R.id.btnClear)
         clearButton.setOnClickListener {
             viewModel.clearAllImages()
         }
 
-
-        // Apply window insets for edge-to-edge support
+        // Edge-to-edge support for RecyclerView
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.rvImageGallery)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)

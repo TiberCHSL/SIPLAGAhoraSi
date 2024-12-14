@@ -1,5 +1,6 @@
 package com.example.siplagmovil.domain
 
+import android.util.Log
 import com.example.siplagmovil.data.model.AuthRepository
 import com.example.siplagmovil.data.response.LoginResponse
 import kotlinx.coroutines.Dispatchers
@@ -11,10 +12,12 @@ class LoginUseCase(private val authRepository : AuthRepository) { //Cambiar auth
         return withContext(Dispatchers.IO) {
             try {
                 val loginResponse = authRepository.login(email, password)
+                //Log.d("LoginUseCase", "Respuesta del usecase: $loginResponse") ERA PARA TESTEO
 
                 if (loginResponse.isSuccess) {
                     // Check if the token is saved after successful login
                     val token = authRepository.getToken()  // Retrieve the saved token
+                    //Log.d("LoginUseCase", "Token after login: $token")
 
                     if (!token.isNullOrEmpty()) {
                         Result.success(Unit)  // Login successful, and token saved
