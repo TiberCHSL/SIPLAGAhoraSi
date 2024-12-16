@@ -10,11 +10,11 @@ object RetrofitInstance {
     private const val BASE_URL = "http://10.0.2.2/" // Ensure this is accessible
 
     private val client: OkHttpClient by lazy {
-        val loggingInterceptor = HttpLoggingInterceptor().apply {
+        /*val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
-        }
+        }*/
         OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
+            //.addInterceptor(loggingInterceptor)
             .build()
     }
 

@@ -2,6 +2,7 @@ package com.example.siplagmovil.ui.images
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
@@ -12,7 +13,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.siplagmovil.data.model.Image
 import com.example.siplagmovil.data.model.ImageRepository
 import com.example.siplagmovil.data.model.local.SharedPreferencesManager
+import com.example.siplagmovil.data.network.ImageUploadService
 import com.example.siplagmovil.data.network.RetrofitInstance
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class ImageGalleryViewModel(application: Application) : AndroidViewModel(application) {
@@ -61,31 +64,22 @@ class ImageGalleryViewModel(application: Application) : AndroidViewModel(applica
             // Update LiveData with the new images
             loadImages()
 
-            // Upload each image immediately
-            imageUris.forEach { uri ->
-                try {
-                    val response = repository.uploadImage(uri, token)
-                    if (response.isSuccessful) {
-                        Log.d("ImageUpload", "Image uploaded successfully: ${response.body()?.message}")
-                        _uploadStatus.value = true
+            // Start the upload service for the new images
+            startImageUploadService(imageUris, token)
 
-                        // Remove the URI after successful upload
-                        repository.deleteImage(uri)
-                        images.removeIf { it.uri == uri }
-                        _imageList.value = images.toList()
-                    } else {
-                        Log.e("ImageUpload", "Failed to upload image: ${response.errorBody()?.string()}")
-                        _uploadStatus.value = false
-                    }
-                } catch (e: Exception) {
-                    Log.e("ImageUpload", "Error uploading image: ${e.message}")
-                    _uploadStatus.value = false
-                }
-            }
         }
     }
 
-
+    private fun startImageUploadService(imageUris: List<Uri>, token: String) {
+        val context = getApplication<Application>().applicationContext
+        val intent = Intent(context, ImageUploadService::class.java).apply {
+            putExtra("token", token)
+            putParcelableArrayListExtra("imageUris", ArrayList(imageUris))
+        }
+        Log.d("ImageUpload", "Passing imageUris to service: $imageUris")
+        context.startService(intent)
+        Log.d("ImageUpload", "ImageUploadService started with ${imageUris.size} images.")
+    }
 
 
     fun clearAllImages() {
@@ -96,22 +90,20 @@ class ImageGalleryViewModel(application: Application) : AndroidViewModel(applica
         _imageList.value = emptyList()
     }
     fun deleteImage(image: Image) {
-        // Get current images from repository
-        val currentImages = repository.loadImagesFromPreferences()
+        // Remove the image from repository (SharedPreferences)
+        repository.deleteImage(image.uri)
 
-        // Remove the image URI from the list
-        val updatedImages = currentImages.filter { it != image.uri }
+        // Fetch the updated list from repository
+        val updatedImages = repository.loadImagesFromPreferences()
 
-        // Save updated list back to repository
-        repository.saveImagesToPreferences(updatedImages)
-
-        // Update the in-memory list and LiveData
-        images.remove(image)
-        _imageList.value = images.toList()
+        // Update LiveData and in-memory list
+        _imageList.value = updatedImages.map { Image(it, "Image ${it.hashCode()}") }
     }
 
-
-
+    // Method to update upload status
+    fun setUploadStatus(isSuccess: Boolean) {
+        _uploadStatus.value = isSuccess
+    }
 
 }
 

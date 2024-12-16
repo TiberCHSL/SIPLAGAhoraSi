@@ -1,6 +1,9 @@
 package com.example.siplagmovil
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -27,6 +30,19 @@ class ImagesActivity : AppCompatActivity() {
     private lateinit var adapter: ImageGalleryAdapter
     private val viewModel: ImageGalleryViewModel by viewModels()
 
+    // Register receiver for the broadcast
+    private val imageUploadReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            // Get the result from the intent (whether upload was successful)
+            val isSuccess = intent?.getBooleanExtra("upload_success", false) ?: false
+
+            // Update the ViewModel with the upload result
+            viewModel.setUploadStatus(isSuccess)
+
+            // Refresh images after upload is completed
+            viewModel.loadImages()
+        }
+    }
     private val pickMultipleImagesContract =
         registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris: List<Uri>? ->
             uris?.let {
@@ -47,6 +63,9 @@ class ImagesActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_images3)
 
+
+        val filter = IntentFilter("com.example.siplagmovil.IMAGE_UPLOAD_COMPLETE")
+        registerReceiver(imageUploadReceiver, filter)
         // Initialize RecyclerView and adapter
         recyclerView = findViewById(R.id.rvImageGallery)
         recyclerView.layoutManager = GridLayoutManager(this, 3)
@@ -93,4 +112,10 @@ class ImagesActivity : AppCompatActivity() {
             insets
         }
     }
+    override fun onDestroy() {
+        super.onDestroy()
+        // Unregister the receiver when activity is destroyed
+        unregisterReceiver(imageUploadReceiver)
+    }
 }
+
